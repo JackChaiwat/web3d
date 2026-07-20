@@ -827,3 +827,129 @@ body {
   .process-meter,
   .scroll-note { font-size: 8.5px; }
 }
+
+/* Final clarity pass: size creates hierarchy; effects stay on display type only */
+body {
+  text-rendering: optimizeLegibility;
+  text-shadow: none;
+}
+
+.main-nav,
+.works-link,
+.hero-kicker,
+.intro-grid p,
+.primary-action,
+.text-action,
+.hero-metrics,
+.section-no,
+.eyebrow,
+.about-copy,
+.proof-grid,
+.service-list,
+.quality-list,
+.quality-note,
+.process-meter,
+.process-steps,
+.contact,
+.rail {
+  text-shadow: none;
+  -webkit-text-stroke: 0;
+}
+
+.primary-action,
+.text-action,
+.works-link,
+.contact {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.intro-grid p {
+  color: #171d1f;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.58;
+  text-shadow: none;
+  -webkit-text-stroke: 0;
+}
+
+.about-copy p,
+.proof-grid p,
+.quality-list p,
+.quality-note,
+.service-list p {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.58;
+  text-shadow: none;
+}
+
+.service-list p { color: #f8f7f3; }
+
+.hero-metrics dd,
+.section-no,
+.proof-grid strong,
+.service-list article > span,
+.quality-list li::before,
+.process-steps strong,
+.rail small {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: .035em;
+  text-shadow: none;
+  -webkit-text-stroke: 0;
+}
+
+.eyebrow {
+  font-size: 12px;
+  line-height: 1.45;
+  letter-spacing: .055em;
+  text-shadow: none !important;
+}
+
+.hero-metrics dt {
+  font-weight: 600;
+  text-shadow: none;
+}
+
+.panel-heading h2 {
+  max-width: min(980px, calc(100vw - max(14vw, 124px)));
+  font-size: clamp(44px, 6.2vw, 92px);
+  line-height: 1.08;
+  letter-spacing: -.025em;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 700px) {
+  .primary-action,
+  .text-action,
+  .works-link,
+  .contact { font-size: 12px; }
+
+  .intro-grid p,
+  .about-copy p,
+  .proof-grid p,
+  .quality-list p,
+  .quality-note,
+  .service-list p {
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .hero-metrics dd,
+  .section-no,
+  .proof-grid strong,
+  .service-list article > span,
+  .quality-list li::before,
+  .process-steps strong { font-size: 10px; }
+
+  .eyebrow { font-size: 10.5px; }
+
+  .panel-heading h2 {
+    max-width: calc(100vw - 78px);
+    font-size: clamp(38px, 11.5vw, 56px);
+    line-height: 1.1;
+  }
+}
