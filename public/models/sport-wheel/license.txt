@@ -1,0 +1,8 @@
+Model Information:
+* title:	Sport Alloy Wheel Rim
+* source:	https://sketchfab.com/3d-models/sport-alloy-wheel-rim-859a869f75034e6dabf3ed25112304f2
+* author:	Xieyn (https://sketchfab.com/xieyna)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works
