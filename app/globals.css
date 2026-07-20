@@ -659,3 +659,116 @@ select { font: inherit; }
   .works-link { font-size: 11px; }
   .hero-kicker { font-size: 8px; }
 }
+
+/* Dimensional type treatment: defined edges without a soft/glowing look */
+body {
+  font-kerning: normal;
+  font-feature-settings: "kern" 1, "liga" 1;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, .48),
+    0 1.5px 2px rgba(18, 25, 27, .16);
+}
+
+.hero h1,
+.panel-heading h2,
+.quality-intro h2,
+.closing h2 {
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, .78),
+    0 3px 0 rgba(31, 37, 39, .1),
+    0 10px 24px rgba(25, 31, 33, .2);
+}
+
+.service-title h2,
+.manifesto h2 {
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, .18),
+    0 3px 0 rgba(36, 7, 14, .26),
+    0 12px 26px rgba(25, 4, 9, .34);
+}
+
+.wordmark,
+.main-nav,
+.works-link,
+.hero-kicker,
+.eyebrow,
+.hero-metrics,
+.process-meter,
+.process-steps,
+.contact {
+  -webkit-text-stroke: .08px currentColor;
+}
+
+.intro-grid,
+.about-copy,
+.proof-grid,
+.service-list,
+.quality-list,
+.quality-note {
+  transform: none;
+  will-change: auto;
+}
+
+.intro-grid p {
+  color: #202729;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.58;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, .72),
+    0 2px 3px rgba(17, 23, 25, .2);
+  -webkit-text-stroke: .1px currentColor;
+}
+
+.about-copy p,
+.proof-grid p,
+.quality-list p,
+.quality-note {
+  color: #282f31;
+  font-weight: 500;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, .58),
+    0 2px 3px rgba(18, 24, 26, .16);
+}
+
+.proof-grid span,
+.quality-list span,
+.hero-metrics dt {
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, .66),
+    0 3px 5px rgba(18, 24, 26, .18);
+}
+
+.services-panel,
+.manifesto {
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, .12),
+    0 2px 3px rgba(22, 3, 8, .5);
+}
+
+.service-list p {
+  color: rgba(255, 255, 255, .92);
+  font-weight: 500;
+  text-shadow: 0 2px 3px rgba(24, 3, 8, .62);
+}
+
+.service-list h3,
+.process-steps span {
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, .16),
+    0 3px 5px rgba(24, 3, 8, .56);
+}
+
+.rail span,
+.scene-word {
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, .5),
+    0 4px 10px rgba(20, 26, 28, .18);
+}
+
+@media (max-width: 700px) {
+  .intro-grid p {
+    font-size: 12.5px;
+    line-height: 1.55;
+  }
+}
