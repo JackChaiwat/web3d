@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PageShell } from "../PageShell";
+import { PublishedArticles } from "./PublishedArticles";
 
 export const metadata: Metadata = {
   title: "ข่าวสารและกิจกรรม | Hangermann Finishing Systems",
@@ -20,6 +21,7 @@ export default function NewsPage() {
         <h1>เรื่องราวจาก<br />พื้นที่ปฏิบัติงานจริง</h1>
         <p>กิจกรรม ความปลอดภัย และองค์ความรู้ที่ช่วยยกระดับกระบวนการผลิตในอุตสาหกรรม</p>
       </section>
+      <PublishedArticles />
       <section className="news-page-grid">
         {items.map(([category, title, image, href], index) => (
           <a className={index === 0 ? "news-page-card featured" : "news-page-card"} href={href} target="_blank" rel="noreferrer" key={title}>
