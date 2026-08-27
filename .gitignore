@@ -40,3 +40,9 @@ next-env.d.ts
 /.wrangler/
 /outputs/
 /work/
+/tmp/
+/output/
+/app/*.zip
+/*_notepad.txt
+/*_workflow.txt
+/task_analysis_*.txt

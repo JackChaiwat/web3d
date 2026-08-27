@@ -1,0 +1,16 @@
+[Unit]
+Description=Hangermann production website
+After=network.target
+
+[Service]
+Type=simple
+User=azureuser
+Group=azureuser
+WorkingDirectory=/opt/hangermann
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/npm run start -- --port 3000 --hostname 127.0.0.1
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

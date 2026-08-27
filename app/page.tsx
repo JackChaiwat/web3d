@@ -1,29 +1,73 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { type MouseEvent, useCallback, useEffect, useRef, useState } from "react";
+import { LoadingScreen } from "./LoadingScreen";
 import { WheelScene } from "./WheelScene";
+import { SiteHeader } from "./SiteHeader";
+
+const partnerLogos = [
+  ["Honda", "https://image.makewebeasy.net/makeweb/m_1920x0/TAzKwyd6a/01_Home/S6_brand1_2x.webp?v=202405291424"],
+  ["GWM", "https://image.makewebeasy.net/makeweb/crop/TAzKwyd6a/01_Home/S6_brand2_2x.webp?v=202405291424&x=0&y=1&w=664&h=362"],
+  ["Hitachi", "https://image.makewebeasy.net/makeweb/crop/TAzKwyd6a/01_Home/S6_brand3_2x.webp?v=202405291424&x=0&y=1&w=664&h=362"],
+  ["Isuzu", "https://image.makewebeasy.net/makeweb/crop/TAzKwyd6a/01_Home/S6_brand4_2x.webp?v=202405291424&x=0&y=1&w=664&h=362"],
+  ["Toyota", "https://image.makewebeasy.net/makeweb/crop/TAzKwyd6a/01_Home/S6_brand5-1.webp?v=202405291424&x=0&y=1&w=332&h=181"],
+  ["Mitsubishi Electric", "https://image.makewebeasy.net/makeweb/crop/TAzKwyd6a/01_Home/S6_brand6_2x.webp?v=202405291424&x=2&y=0&w=661&h=364"],
+  ["Nissan", "https://image.makewebeasy.net/makeweb/crop/TAzKwyd6a/01_Home/S6_brand7_2x.webp?v=202405291424&x=0&y=1&w=664&h=362"],
+  ["Enkei", "https://image.makewebeasy.net/makeweb/crop/TAzKwyd6a/01_Home/S6_brand8_2x.webp?v=202405291424&x=0&y=2&w=664&h=361"],
+  ["Triumph", "https://image.makewebeasy.net/makeweb/crop/TAzKwyd6a/01_Home/S6_brand9_2x.webp?v=202405291424&x=0&y=2&w=664&h=361"],
+  ["Daikin", "https://image.makewebeasy.net/makeweb/crop/TAzKwyd6a/01_Home/S6_brand10_2x.webp?v=202405291424&x=0&y=2&w=664&h=361"],
+  ["Lenso", "https://image.makewebeasy.net/makeweb/crop/TAzKwyd6a/01_Home/S6_brand11_2x.webp?v=202405291424&x=0&y=2&w=664&h=361"],
+  ["Kubota", "https://image.makewebeasy.net/makeweb/crop/TAzKwyd6a/01_Home/S6_brand12_2x.webp?v=202405291424&x=0&y=2&w=664&h=361"],
+  ["Kawasaki", "https://image.makewebeasy.net/makeweb/m_1920x0/TAzKwyd6a/01_Home/S6_brand13_2x.webp?v=202405291424"],
+  ["ARB", "https://image.makewebeasy.net/makeweb/crop/TAzKwyd6a/01_Home/S6_brand14_2x.webp?v=202405291424&x=2&y=0&w=661&h=364"],
+  ["Harley-Davidson", "https://image.makewebeasy.net/makeweb/crop/TAzKwyd6a/01_Home/S6_brand5_2x.webp?v=202405291424&x=2&y=0&w=661&h=364"],
+] as const;
+
+const newsItems = [
+  {
+    title: "กิจกรรม CSR",
+    category: "News",
+    image: "/images/news/csr.webp",
+    href: "https://www.hangermannthai.com/blog/5617/กิจกรรม-csr",
+  },
+  {
+    title: "ซ้อมดับเพลิง บริษัท แฮงเกอร์แมน ฟินนิชชิ่ง ซีสเท็มส์ จำกัด",
+    category: "News",
+    image: "/images/news/fire-drill.jpg",
+    href: "https://www.hangermannthai.com/blog/5618/ซ้อมดับเพลิง-บริษัท-แฮงเกอร์แมน-ฟินนิชชิ่ง-ซีสเท็มส์-จำกัด",
+  },
+  {
+    title: "บริการลอกสีคืออะไร?",
+    category: "Blog",
+    image: "/images/news/paint-stripping-guide.webp",
+    href: "https://www.hangermannthai.com/blog/5619/บริการลอกสีคืออะไร",
+  },
+] as const;
 
 export default function Home() {
   const rootRef = useRef<HTMLDivElement>(null);
   const [siteReady, setSiteReady] = useState(false);
-  const handleSiteReady = useCallback(() => setSiteReady(true), []);
-
-  useEffect(() => {
-    const fallback = window.setTimeout(() => setSiteReady(true), 4500);
-    return () => window.clearTimeout(fallback);
-  }, []);
+  const [sceneReady, setSceneReady] = useState(false);
+  const handleSiteReady = useCallback(() => setSceneReady(true), []);
+  const handleLoadingComplete = useCallback(() => setSiteReady(true), []);
 
   useEffect(() => {
     let frame = 0;
     const update = () => {
       const sequence = rootRef.current?.querySelector<HTMLElement>(".wheel-sequence");
+      const processTrack = rootRef.current?.querySelector<HTMLElement>(".wheel-content");
       const rect = sequence?.getBoundingClientRect();
-      const max = Math.max((rect?.height ?? document.documentElement.scrollHeight) - window.innerHeight, 1);
-      const progress = rect
-        ? Math.max(0, Math.min(1, -rect.top / max))
+      const processRect = processTrack?.getBoundingClientRect();
+      const max = Math.max((processRect?.height ?? document.documentElement.scrollHeight) - window.innerHeight, 1);
+      const progress = processRect
+        ? Math.max(0, Math.min(1, -processRect.top / max))
         : Math.max(0, Math.min(1, window.scrollY / max));
+      const editorialProgress = processRect
+        ? Math.max(0, -processRect.bottom / Math.max(window.innerHeight, 1))
+        : 0;
       const phase = window.scrollY / Math.max(window.innerHeight, 1);
       rootRef.current?.style.setProperty("--scroll", progress.toFixed(4));
+      rootRef.current?.style.setProperty("--editorial-wheel", editorialProgress.toFixed(4));
       const wheelActive = rect
         ? rect.bottom > 0 && rect.top <= window.innerHeight * 1.02
         : true;
@@ -50,42 +94,34 @@ export default function Home() {
     };
   }, []);
 
+  const handleQuickJump = useCallback((event: MouseEvent<HTMLElement>) => {
+    const link = (event.target as HTMLElement).closest<HTMLAnchorElement>("a[href^='#']");
+    if (!link) return;
+    const targetId = link.hash.slice(1);
+    const target = document.getElementById(targetId);
+    if (!target) return;
+
+    event.preventDefault();
+    setSiteReady(true);
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.history.replaceState(null, "", `#${targetId}`);
+  }, []);
+
   return (
     <div ref={rootRef} className={`experience-root${siteReady ? " is-site-ready" : ""}`}>
-      <div className={`site-loading-gate${siteReady ? " is-ready" : ""}`} role="status" aria-live="polite" aria-label="กำลังเตรียมประสบการณ์สามมิติ">
-        <div className="loader-header" aria-hidden="true">
-          <span className="loader-brand">HANGERMANN®</span>
-          <span className="loader-standard">INDUSTRIAL FINISHING · ISO 9001:2015</span>
-        </div>
-        <span className="loader-index" aria-hidden="true">00 / INITIALIZING</span>
-        <div className="loader-stage">
-          <span className="loader-wheel" aria-hidden="true"><i /></span>
-          <div className="loader-message">
-            <span className="loader-copy">กำลังเตรียมพื้นผิว</span>
-            <span className="loader-subcopy">โหลดโมเดลล้อแม็กและระบบจำลองกระบวนการลอกสี</span>
-          </div>
-        </div>
-        <span className="loader-progress" aria-hidden="true"><i /></span>
-        <div className="loader-footer" aria-hidden="true">
-          <span>STRIP</span><span>CLEAN</span><span>CONTROL</span><span>READY</span>
-        </div>
-      </div>
+      <LoadingScreen sceneReady={sceneReady} isComplete={siteReady} onComplete={handleLoadingComplete} />
       <a className="skip-link" href="#main-content">ข้ามไปยังเนื้อหาหลัก</a>
       <main id="main-content" className="site-shell" aria-busy={!siteReady}>
-      <header className="topbar">
-        <a className="wordmark" href="#top" aria-label="Hangermann Finishing Systems — กลับด้านบน">
-          HANGERMANN®
-        </a>
-        <nav className="main-nav" aria-label="เมนูหลัก">
-          <a href="#about">เกี่ยวกับเรา</a>
-          <a href="#services">บริการ</a>
-          <a href="#quality">มาตรฐาน</a>
-          <a href="#process">กระบวนการ</a>
-        </nav>
-        <a className="works-link" href="tel:027065066">
-          ติดต่อเรา <span aria-hidden="true">↗</span>
-        </a>
-      </header>
+      <SiteHeader active="home" />
+
+      <nav className="site-quick-jump quick-jump-nav" aria-label="เมนูลัดไปยังส่วนสำคัญ" onClick={handleQuickJump}>
+        <div className="process-line"></div>
+        <a href="#about">เกี่ยวกับเรา</a>
+        <a href="#services">บริการ</a>
+        <a href="#quality">มาตรฐาน</a>
+        <a href="#process">กระบวนการ</a>
+        <a href="#partners">พันธมิตร</a>
+      </nav>
 
       <aside className="rail rail-left" aria-hidden="true">
         <span>INDUSTRIAL PAINT STRIPPING SINCE 1994</span>
@@ -133,13 +169,25 @@ export default function Home() {
           <div className="wheel-shadow" />
           <WheelScene onReady={handleSiteReady} />
           <span className="scroll-note">เลื่อนเพื่อดูกระบวนการลอกสี ↓</span>
-          <div className="process-meter">
+          <nav className="process-meter quick-jump-nav" aria-label="เมนูลัดไปยังส่วนสำคัญ">
             <div className="process-line"><i /></div>
-            <span>ผิวเคลือบเดิม</span><span>ลอกสีและทำความสะอาด</span><span>ผิวพร้อมใช้งาน</span>
-          </div>
+            <a href="#about">เกี่ยวกับเรา</a>
+            <a href="#services">บริการ</a>
+            <a href="#quality">มาตรฐาน</a>
+            <a href="#process">กระบวนการ</a>
+            <a href="#partners">พันธมิตร</a>
+          </nav>
         </div>
 
         <div className="wheel-content">
+          <nav className="process-meter quick-jump-nav" aria-label="เมนูลัดไปยังส่วนสำคัญ">
+            <div className="process-line"><i /></div>
+            <a href="#about">เกี่ยวกับเรา</a>
+            <a href="#services">บริการ</a>
+            <a href="#quality">มาตรฐาน</a>
+            <a href="#process">กระบวนการ</a>
+            <a href="#partners">พันธมิตร</a>
+          </nav>
       <section id="about" className="panel info-panel about-panel">
         <span className="scene-word" aria-hidden="true">1994</span>
         <div className="panel-heading">
@@ -201,6 +249,66 @@ export default function Home() {
         <span className="section-no">005 / CONTROLLED PROCESS</span>
       </section>
         </div>
+
+      <section id="solutions" className="capability-strip" aria-labelledby="capability-strip-title">
+        <div className="capability-intro">
+          <span className="eyebrow">SERVICE TO SOLUTION</span>
+          <h2 id="capability-strip-title">บริการครบ<br />จบในระบบเดียว</h2>
+          <p>ตั้งแต่รับชิ้นงาน ลอกสี ตรวจสอบคุณภาพ ไปจนถึงผลิตภัณฑ์สำหรับดูแลพื้นผิวในโรงงาน</p>
+        </div>
+        <div className="capability-links">
+          <a href="#services">
+            <img src="/images/services/paint-stripping.webp" alt="บริการลอกสีชิ้นงานอุตสาหกรรม" loading="lazy" decoding="async" />
+            <span><small>01 / SERVICE</small><strong>บริการลอกสี</strong></span>
+            <i aria-hidden="true">↗</i>
+          </a>
+          <a href="https://www.loxzythai.com/" target="_blank" rel="noreferrer">
+            <img src="/images/services/paint-remover.webp" alt="ผลิตภัณฑ์น้ำยาลอกสีสำหรับงานอุตสาหกรรม" loading="lazy" decoding="async" />
+            <span><small>02 / PRODUCT</small><strong>ผลิตภัณฑ์ลอกสี</strong></span>
+            <i aria-hidden="true">↗</i>
+          </a>
+        </div>
+      </section>
+
+      <section id="partners" className="partner-band" aria-labelledby="partners-title">
+        <div className="partner-band-heading">
+          <span className="eyebrow">TRUSTED ACROSS INDUSTRIES</span>
+          <h2 id="partners-title">ความไว้วางใจที่<br />ขับเคลื่อนอุตสาหกรรม</h2>
+          <p>ร่วมงานกับผู้นำด้านยานยนต์ เครื่องจักร อิเล็กทรอนิกส์ และการผลิตระดับประเทศ</p>
+        </div>
+        <div className="partner-logo-cloud" aria-label="รายชื่อพันธมิตรของบริษัท">
+          {partnerLogos.map(([name, src]) => (
+            <div className="partner-logo" key={name}>
+              <img src={src} alt={name} loading="lazy" decoding="async" />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section id="news" className="news-editorial" aria-labelledby="news-title">
+        <header className="news-editorial-heading">
+          <div>
+            <span className="eyebrow">NEWS & KNOWLEDGE</span>
+            <h2 id="news-title">เรื่องราวจาก<br />พื้นที่ปฏิบัติงานจริง</h2>
+          </div>
+          <p>อัปเดตกิจกรรม ความปลอดภัย และความรู้เกี่ยวกับกระบวนการลอกสีอุตสาหกรรม</p>
+        </header>
+        <div className="news-editorial-layout">
+          <a className="news-featured" href={newsItems[0].href} target="_blank" rel="noreferrer">
+            <img src={newsItems[0].image} alt="" loading="lazy" decoding="async" />
+            <div><small>{newsItems[0].category} / 01</small><h3>{newsItems[0].title}</h3><span>อ่านเรื่องราว ↗</span></div>
+          </a>
+          <div className="news-secondary-list">
+            {newsItems.slice(1).map((item, index) => (
+              <a href={item.href} target="_blank" rel="noreferrer" key={item.title}>
+                <img src={item.image} alt="" loading="lazy" decoding="async" />
+                <div><small>{item.category} / 0{index + 2}</small><h3>{item.title}</h3><span>อ่านต่อ ↗</span></div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
       </div>
 
       <section id="contact" className="panel closing">

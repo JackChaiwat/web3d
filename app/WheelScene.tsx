@@ -4,12 +4,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 const vertexSource = `
 attribute vec3 aPosition; attribute vec3 aNormal; attribute vec2 aUv; attribute float aMaterial;
-uniform float uAspect,uRotX,uRotY,uRotZ,uLift,uLayer,uExplode,uStrip,uProcess,uMotion,uZoom;
+uniform float uAspect,uRotX,uRotY,uRotZ,uLift,uLayer,uExplode,uStrip,uProcess,uMotion,uZoom,uShiftX;
 varying vec3 vNormal,vLocal; varying vec2 vUv; varying float vMaterial,vLayer,vSheet,vFacing;
 vec3 rx(vec3 p,float a){a+=sin(uMotion*6.2831853)*.14;float c=cos(a),s=sin(a);return vec3(p.x,p.y*c-p.z*s,p.y*s+p.z*c);}
 vec3 ry(vec3 p,float a){a+=uMotion*6.2831853;float c=cos(a),s=sin(a);return vec3(p.x*c+p.z*s,p.y,-p.x*s+p.z*c);}
 vec3 rz(vec3 p,float a){a+=sin(uMotion*3.14159265)*.22;float c=cos(a),s=sin(a);return vec3(p.x*c-p.y*s,p.x*s+p.y*c,p.z);}
-void main(){vec3 local=aPosition;float angle=fract(atan(aPosition.y,aPosition.x)/6.2831853+.5);float sheet=fract(uStrip-angle+1.0);if(uLayer>.5){float wet=sin(smoothstep(.02,.48,uProcess)*3.14159265);local.z+=uExplode*(.008+wet*.032);}vec3 p=rz(rx(ry(local,uRotY),uRotX),uRotZ);vec3 n=normalize(rz(rx(ry(aNormal,uRotY),uRotX),uRotZ));p.y+=uLift;float vz=5.9-p.z,f=2.3*uZoom,nr=.1,fr=30.0;gl_Position=vec4(p.x*f/uAspect,p.y*f,((fr+nr)/(fr-nr))*vz-(2.0*fr*nr)/(fr-nr),vz);vNormal=n;vLocal=aPosition;vUv=aUv;vMaterial=aMaterial;vLayer=uLayer;vSheet=sheet;vFacing=aNormal.z;}`;
+void main(){vec3 local=aPosition;float angle=fract(atan(aPosition.y,aPosition.x)/6.2831853+.5);float sheet=fract(uStrip-angle+1.0);if(uLayer>.5){float wet=sin(smoothstep(.02,.48,uProcess)*3.14159265);local.z+=uExplode*(.008+wet*.032);}vec3 p=rz(rx(ry(local,uRotY),uRotX),uRotZ);vec3 n=normalize(rz(rx(ry(aNormal,uRotY),uRotX),uRotZ));p.x+=uShiftX;p.y+=uLift;float vz=5.9-p.z,f=2.3*uZoom,nr=.1,fr=30.0;gl_Position=vec4(p.x*f/uAspect,p.y*f,((fr+nr)/(fr-nr))*vz-(2.0*fr*nr)/(fr-nr),vz);vNormal=n;vLocal=aPosition;vUv=aUv;vMaterial=aMaterial;vLayer=uLayer;vSheet=sheet;vFacing=aNormal.z;}`;
 
 const fragmentSource = `
 precision highp float;
@@ -328,9 +328,9 @@ function ProceduralWheelScene({ onReady }: { onReady: () => void }){const ref=us
 function ImportedWheelScene({ onReady,onUnavailable,model="full" }: { onReady: () => void; onUnavailable: () => void; model?: "lite"|"full" }){
   const ref=useRef<HTMLCanvasElement>(null);
   useEffect(()=>{
-    const canvas=ref.current!,gl=canvas.getContext("webgl",{alpha:true,antialias:true,premultipliedAlpha:false});
+    const canvas=ref.current!,gl=canvas.getContext("webgl",{alpha:true,antialias:true,premultipliedAlpha:false})!;
     if(!gl){onUnavailable();return;}
-    let raf=0,disposed=false,px=0,py=0,didSignalReady=false,readinessFrames=0,smoothedWheelMotion=0;
+    let raf=0,disposed=false,px=0,py=0,didSignalReady=false,readinessFrames=0,smoothedWheelMotion=0,smoothedPageProgress=0,smoothedEditorialProgress=0,smoothedPx=0,smoothedPy=0,lastFrameTime=0;
     const contextLost=(event:Event)=>{event.preventDefault();onUnavailable();};
     canvas.addEventListener("webglcontextlost",contextLost);
     const pointer=(e:PointerEvent)=>{px=(e.clientX/innerWidth-.5)*.36;py=(e.clientY/innerHeight-.5)*.12;};
@@ -346,7 +346,7 @@ function ImportedWheelScene({ onReady,onUnavailable,model="full" }: { onReady: (
       if(useUint32&&!gl.getExtension("OES_element_index_uint"))throw new Error("This alloy wheel requires 32-bit WebGL indices");
       const indexType=useUint32?gl.UNSIGNED_INT:gl.UNSIGNED_SHORT;
       const ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,useUint32?new Uint32Array(g.i):new Uint16Array(g.i),gl.STATIC_DRAW);
-      const u=(n:string)=>gl.getUniformLocation(program,n),aspect=u("uAspect"),rx=u("uRotX"),ry=u("uRotY"),rz=u("uRotZ"),lift=u("uLift"),process=u("uProcess"),motion=u("uMotion"),zoom=u("uZoom"),layer=u("uLayer"),explode=u("uExplode"),stripUniform=u("uStrip"),surfaceWater=u("uWater");
+      const u=(n:string)=>gl.getUniformLocation(program,n),aspect=u("uAspect"),rx=u("uRotX"),ry=u("uRotY"),rz=u("uRotZ"),lift=u("uLift"),process=u("uProcess"),motion=u("uMotion"),zoom=u("uZoom"),shiftX=u("uShiftX"),layer=u("uLayer"),explode=u("uExplode"),stripUniform=u("uStrip"),surfaceWater=u("uWater");
       let seed=94721;
       const random=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646;};
       const vertexCount=g.p.length/3,frontSurface:number[]=[];let maxWheelRadius=0;
@@ -386,32 +386,52 @@ function ImportedWheelScene({ onReady,onUnavailable,model="full" }: { onReady: (
       gl.bindBuffer(gl.ARRAY_BUFFER,waterInfoBuffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(waterInfo),gl.STATIC_DRAW);
       const waterSeedLocation=gl.getAttribLocation(waterProgram,"aSeed"),waterVelocityLocation=gl.getAttribLocation(waterProgram,"aVelocity"),waterInfoLocation=gl.getAttribLocation(waterProgram,"aInfo");
       const wu=(n:string)=>gl.getUniformLocation(waterProgram,n),wAspect=wu("uAspect"),wRx=wu("uRotX"),wRy=wu("uRotY"),wRz=wu("uRotZ"),wMotion=wu("uMotion"),wZoom=wu("uZoom"),wWater=wu("uWater"),wDpr=wu("uDpr");
-      const render=()=>{
+      const render=(time=0)=>{
         const sequence=canvas.closest(".wheel-sequence") as HTMLElement|null;
         const sequenceRect=sequence?.getBoundingClientRect();
+        const processTrack=sequence?.querySelector(".wheel-content") as HTMLElement|null;
+        const processRect=processTrack?.getBoundingClientRect();
         const shouldDraw=!document.hidden&&(!sequenceRect||(sequenceRect.bottom>0&&sequenceRect.top<innerHeight*1.10));
         if(!shouldDraw){raf=requestAnimationFrame(render);return;}
         const d=Math.min(Math.max(devicePixelRatio||1,1.2),innerWidth<700?1.25:1.4),w=Math.max(1,canvas.clientWidth*d),h=Math.max(1,canvas.clientHeight*d);
         if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);}
-        const maxScroll=Math.max((sequenceRect?.height??document.documentElement.scrollHeight)-innerHeight,1);
-        const pageProgress=sequenceRect
-          ? Math.max(0,Math.min(1,-sequenceRect.top/maxScroll))
+        const maxScroll=Math.max((processRect?.height??document.documentElement.scrollHeight)-innerHeight,1);
+        const targetPageProgress=processRect
+          ? Math.max(0,Math.min(1,-processRect.top/maxScroll))
           : Math.max(0,Math.min(1,scrollY/maxScroll));
+        const targetEditorialProgress=processRect?Math.max(0,-processRect.bottom/Math.max(innerHeight,1)):0;
+        const delta=Math.min(Math.max((time-lastFrameTime)/16.667,0),2.4)||1;
+        lastFrameTime=time;
+        const progressEase=1-Math.pow(.90,delta);
+        const editorialEase=1-Math.pow(.88,delta);
+        const pointerEase=1-Math.pow(.84,delta);
+        smoothedPageProgress+=(targetPageProgress-smoothedPageProgress)*progressEase;
+        smoothedEditorialProgress+=(targetEditorialProgress-smoothedEditorialProgress)*editorialEase;
+        smoothedPx+=(px-smoothedPx)*pointerEase;
+        smoothedPy+=(py-smoothedPy)*pointerEase;
+        const pageProgress=smoothedPageProgress;
+        const editorialProgress=smoothedEditorialProgress;
+        const editorialBlend=smoothstepJs(.02,.48,editorialProgress);
         const processProgress=smoothstepJs(.06,.94,pageProgress);
-        const targetWheelMotion=motionTrack(pageProgress);
-        smoothedWheelMotion+=(targetWheelMotion-smoothedWheelMotion)*.038;
+        const targetWheelMotion=motionTrack(pageProgress)+editorialProgress*.18;
+        smoothedWheelMotion+=(targetWheelMotion-smoothedWheelMotion)*(1-Math.pow(.94,delta));
         const wheelMotion=smoothedWheelMotion;
         const introZoom=1-smoothstepJs(.015,.145,pageProgress);
-        const zoomValue=zoomTrack(pageProgress);
+        const serviceFocus=smoothstepJs(.29,.36,pageProgress)*(1-smoothstepJs(.53,.60,pageProgress));
+        const zoomValue=zoomTrack(pageProgress)*(1-serviceFocus*(innerWidth<700?.10:.08))*(1-editorialBlend*.19);
         const strip=smoothstepJs(.06,.92,processProgress);
         const waterProgress=smoothstepJs(.285,.60,pageProgress);
-        const serviceFocus=smoothstepJs(.29,.36,pageProgress)*(1-smoothstepJs(.53,.60,pageProgress));
-        const rotX=(-.01+py*.55+Math.sin(pageProgress*Math.PI)*.045)*(1-serviceFocus),rotY=(.015+px*.55)*(1-serviceFocus),rotZ=(-.015+pageProgress*.10)*(1-serviceFocus);
+        const editorialSwing=Math.sin(editorialProgress*Math.PI*.76);
+        const horizontalShift=0;
+        const idleBreath=Math.sin(time*.00055)*.018;
+        const rotX=(-.01+smoothedPy*.55+Math.sin(pageProgress*Math.PI)*.045)*(1-serviceFocus)+Math.sin(editorialProgress*.72)*.035*editorialBlend;
+        const rotY=(.015+smoothedPx*.55)*(1-serviceFocus)+editorialSwing*.18+idleBreath*(1-serviceFocus);
+        const rotZ=(-.015+pageProgress*.10)*(1-serviceFocus)+editorialProgress*.14+Math.sin(time*.00032)*.006;
         gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.enable(gl.DEPTH_TEST);
         gl.useProgram(program);for(const binding of wheelBindings){gl.bindBuffer(gl.ARRAY_BUFFER,binding.buffer);gl.enableVertexAttribArray(binding.location);gl.vertexAttribPointer(binding.location,binding.size,gl.FLOAT,false,0,0);}gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);
         const introLift=-.08*introZoom;
-        const scrollLift=introLift+Math.sin(pageProgress*Math.PI)*.018*(1-smoothstepJs(.55,.72,pageProgress));
-        gl.uniform1f(aspect,w/h);gl.uniform1f(rx,rotX);gl.uniform1f(ry,rotY);gl.uniform1f(rz,rotZ);gl.uniform1f(lift,scrollLift);gl.uniform1f(process,processProgress);gl.uniform1f(motion,wheelMotion);gl.uniform1f(zoom,zoomValue);gl.uniform1f(stripUniform,strip);gl.uniform1f(surfaceWater,waterProgress);gl.uniform1f(explode,Math.sin(strip*Math.PI));gl.uniform1f(layer,0);
+        const scrollLift=introLift+Math.sin(pageProgress*Math.PI)*.018*(1-smoothstepJs(.55,.72,pageProgress))+Math.cos(editorialProgress*Math.PI*.52)*.035*editorialBlend;
+        gl.uniform1f(aspect,w/h);gl.uniform1f(rx,rotX);gl.uniform1f(ry,rotY);gl.uniform1f(rz,rotZ);gl.uniform1f(lift,scrollLift);gl.uniform1f(process,processProgress);gl.uniform1f(motion,wheelMotion);gl.uniform1f(zoom,zoomValue);gl.uniform1f(shiftX,horizontalShift);gl.uniform1f(stripUniform,strip);gl.uniform1f(surfaceWater,waterProgress);gl.uniform1f(explode,Math.sin(strip*Math.PI));gl.uniform1f(layer,0);
         gl.drawElements(gl.TRIANGLES,g.i.length,indexType,0);
         if(strip>.015&&strip<.985){
           gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);
