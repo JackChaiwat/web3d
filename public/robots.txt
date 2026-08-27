@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://jackchaiwat.github.io/web3d/sitemap.xml
